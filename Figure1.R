@@ -1,10 +1,12 @@
 ### Figure 1
+# the following files are provided in OSF https://osf.io/9xys4/
 Counts <- read.delim("Counts.txt",h=T)
 Diff_ctr <- read.delim("Diff_ctr.txt",h=T)
 colData_RNA_Diff <- data.frame("Sample"=colnames(Diff_ctr)[3:31],
                                "Donor"=gsub("_.*","",colnames(RNA_raw)[3:31]),
                                "Timepoint"=gsub(".*_","",colnames(RNA_raw)[3:31]))
 rownames(colData_RNA_Diff)<-colData_RNA_Diff$Sample
+
 
 ### Figure 1B
 # Graphs were merged in illustrator
@@ -19,6 +21,7 @@ barplot(c(t(data[1,2:3]),
           t(data[8,2:3])),col=c('white','grey'),beside=T)
 barplot(data[,4],col=c('black'),beside=T)
 rm(data)
+
 
 ### Figure 1C
 GOI <- c('TREM1','ADGRE1','SELL','CLEC10A','CTSK','ACP5','MMP9','CA2')
@@ -42,6 +45,7 @@ for(i in GOI){
   }
 }
 rm(GOI,tmp,d0,d2,d5,d9,a,b,i,k)
+
 
 ### Figure 1D
 Diff_ctr[Diff_ctr$Symbol %in% c('LPCAT2','COX11'),grep("cor_Donor",colnames(Diff_ctr))]
@@ -68,6 +72,7 @@ for(i in GOI){
 }
 rm(GOI,tmp,d0,d2,d5,d9,a,b,i,k)
 
+
 ### Figure 1E
 barplot(c(
   nrow(Diff_ctr[Diff_ctr$cor_08==0,]),
@@ -80,8 +85,8 @@ barplot(c(
   nrow(Diff_ctr[Diff_ctr$cor_08==7,]),
   nrow(Diff_ctr[Diff_ctr$cor_08==8,])),col=c('white','white','white','white','white','white','grey','grey','grey'))
 
-### Figure 1F
 
+### Figure 1F
 # PCA plot based on rlog values in Diff_ctr (not shown in the Figure)
 object <- Diff_ctr[,rownames(colData_RNA_Diff)]
 intgroup <- c('Timepoint', 'Donor')
@@ -153,6 +158,7 @@ rm(group, intgroup, intgroup.df,ntop,object,dat,ratio.values,percentVar,select,r
 
 
 ###Figure 1G
+# the following files are provided in OSF https://osf.io/9xys4/
 data <- read.delim("ReadyToUse_GSE225974.txt",h=T)
 tmp <- merge(Diff_ctr[,c("Symbol","logFC_d2_vs_d0","logFC_d5_vs_d0", "logFC_d9_vs_d0","logFC_d5_vs_d2","logFC_d9_vs_d2","logFC_d9_vs_d5")],data[,c("Symbol","padj_OCvsPBMC","logFC_OCvsPBMC")], by="Symbol")
 
@@ -175,6 +181,7 @@ rm(tmp_down, tmp_up,mat_col, mat_col_breaks,tmp, data,y)
 
 
 ### Figure 1H
+# the following files are provided in OSF https://osf.io/9xys4/
 data <- read.delim("ReadyToUse_GSE225974.txt",h=T)
 
 GOI <- c('SLC6A7')
@@ -209,6 +216,7 @@ for(i in GOI){
 rm(GOI,tmp,d0,d2,d5,d9,a,b,i,k,data)
 
 ### Figure 1I
+# the following files are provided in OSF https://osf.io/9xys4/
 data <- read.delim("ReadyToUse_GSE225974.txt",h=T)
 tmp <- merge(Diff_ctr[,c("Symbol","logFC_d2_vs_d0","logFC_d5_vs_d0", "logFC_d9_vs_d0","logFC_d5_vs_d2","logFC_d9_vs_d2","logFC_d9_vs_d5")],data[,c("Symbol","padj_OCvsPBMC","logFC_OCvsPBMC")], by="Symbol")
 
