@@ -64,6 +64,7 @@ y[y > 2] <- 2
 dev.off()
 library(fields)
 library(gplots)
+library(RColorBrewer)
 Mycol <- rev(designer.colors(100, col=brewer.pal(9,"Spectral")))
 # As heatmap.2 does not plot all the names of the rows, the information is given in a txt file
 heatp <- heatmap.2(y, trace="none", Colv=F, Rowv=as.dendrogram(hr), col=Mycol, labRow = rownames(y), )
@@ -118,7 +119,7 @@ rm(vec)
 test <- test[order(test[,2], decreasing=F),]
 
 # Make a help data frame in which the genes are ranked for each individual cluster from 1 to the number of genes in each cluster
-# This information is needed in the circos plot to identify the rank of the rgulating TF (from which the lines start) to the rank of the targets (where the lines end)
+# This information is needed in the circos plot to identify the rank of the regulating TF (from which the lines start) to the rank of the targets (where the lines end)
 test_final <- data.frame(matrix(NA, ncol=ncol(test)+1, nrow=1))
 names(test_final) <- c(names(test),'Rank')
 test_final <- test_final[-1,]
@@ -265,6 +266,7 @@ FeaturePlot(scOC,c('MYBL2','MYBL2_scaled'))
 # Expression data per cluster including spearmans correlation and coloring of the clusters
 dev.off()
 par(mfrow=c(1,1),pty="s")
+library(scales)
 plot(sc_TFs$MYBL2, sc_Targets_scaled$MYBL2,col=hue_pal()(19), pch=16)
 title(paste("Spearman's MYBL2:",cor_scOC_TFs_Targets["MYBL2","Spearman"]))
 
@@ -394,7 +396,7 @@ y3 <- TF_Enrichment[TF_Enrichment$Factor %in% Diff_ctr[Diff_ctr$clust==0,'Symbol
 # subgroup4: NOT differentially expressed and NOT a causal eBMD gene
 y4 <- TF_Enrichment[TF_Enrichment$Factor %in% Diff_ctr[Diff_ctr$clust==0,'Symbol'] & TF_Enrichment$P.NI > 5e-8, ]
 
-# Barplot left panel
+# Barplot left panel, which is modified later in Illustrator, using the second bar just for upper alignment of the fourth, thrid and fourth bar are then aligned with the first one and the second is deleted
 barplot(
   c(
     # All TFs from the group
