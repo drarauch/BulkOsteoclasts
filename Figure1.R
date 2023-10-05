@@ -48,6 +48,8 @@ rm(GOI,tmp,d0,d2,d5,d9,a,b,i,k)
 
 
 ### Figure 1D
+# Get the correlation values for two examples
+rownames(Diff_ctr) <- Diff_ctr$Symbol
 Diff_ctr[Diff_ctr$Symbol %in% c('LPCAT2','COX11'),grep("cor_Donor",colnames(Diff_ctr))]
 
 GOI <- c('LPCAT2','COX11')
@@ -62,13 +64,14 @@ for(i in GOI){
   d2 <- unlist(Counts[Counts$Symbol==i,colData_RNA_Diff[colData_RNA_Diff$Timepoint=='d2','Sample']])
   d5 <- unlist(Counts[Counts$Symbol==i,colData_RNA_Diff[colData_RNA_Diff$Timepoint=='d5','Sample']])
   d9 <- unlist(Counts[Counts$Symbol==i,colData_RNA_Diff[colData_RNA_Diff$Timepoint=='d9','Sample']])
-  boxplot(d0,d2,d5,d9,ylab=paste("Counts",i), xaxt="none")
+  bp <- boxplot(d0,d2,d5,d9,ylab=paste("Counts",i), xaxt="none")
   axis(1,at=c(1:4),labels = c('D0','D2','D5','D9'))
   for(k in unique(colData_RNA_Diff$Donor)){
     a <- tmp[tmp$Donor==k,'x']
     b <- unlist(Counts[Counts$Symbol==i,colData_RNA_Diff[colData_RNA_Diff$Donor==k,'Sample']])
     lines(a,b)
   }
+  lines(unique(tmp$x),unlist(bp$stats[3,]), col="red", lwd=2)
 }
 rm(GOI,tmp,d0,d2,d5,d9,a,b,i,k)
 
