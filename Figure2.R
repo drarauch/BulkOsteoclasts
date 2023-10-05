@@ -80,7 +80,7 @@ for(i in 1:8){
   names(Gene_groups)[i] <- paste("clust_",i,sep="")
 }
 
-# Define background genes (all detected in RNA-seq that were used as inoput for DEseq analysis)
+# Define background genes (all detected in RNA-seq that were used as input for DEseq analysis)
 GO <- Diff_ctr$Symbol
 tmp_All <- make.names(GO, unique = TRUE)
 
@@ -103,7 +103,7 @@ for(i in 1:length(Gene_groups)){
   } else {}
 }
 
-# Select terms of interest for plotting and anrange them according to clusters and if there are common terms across clusters (manually)
+# Select terms of interest for plotting and arrange them according to clusters and if there are common terms across clusters (manually)
 BP <- unique(c(
   'GO:0055114','GO:0007005','GO:0010257','GO:0042773','GO:0042407','GO:0019395','GO:0034470',
   'GO:0016126','GO:0045540','GO:0042254','GO:0006364','GO:0010467','GO:0008033','GO:0042773',
@@ -121,7 +121,7 @@ BP <- unique(c(
 # Extract p values for categories of interest and log transform them
 p <- cbind(GO_cluster[GO_cluster$category %in% BP,1:2],-log10(GO_cluster[GO_cluster$category %in% BP,c(4:ncol(GO_cluster))]))
 
-# Order the enrichments based on the individual clusters for nice representation and run a 
+# Order the enrichments based on the individual clusters for nice representation 
 p2 <- -log10(GO_cluster[GO_cluster$category %in% BP,c(4:ncol(GO_cluster))])
 rownames(p2) <- p$category
 rownames(p) <- p$category
@@ -288,7 +288,6 @@ names(Phenotypes_Parameters) <- names(Phenotypes)
 Gene_groups <- list()
 for (i in 1:length(Phenotypes)){
   Gene_groups[[i]] <- unique(Human_Mouse[Human_Mouse$SYMBOL_Mouse %in% unique(Mouse_Phenotypes[Mouse_Phenotypes$mp_term_name %in% Phenotypes[[i]] & Mouse_Phenotypes$zygosity == "homozygote",c("marker_symbol")]),'SYMBOL_Human'])
-  #unique(Mouse_Phenotypes[Mouse_Phenotypes$mp_term_name %in% Phenotypes[[i]],c("marker_symbol","sex","mp_term_name","p_value","percentage_change","effect_size","zygosity")])
 }
 names(Gene_groups) <- names(Phenotypes)
 
@@ -296,7 +295,6 @@ names(Gene_groups) <- names(Phenotypes)
 Gene_groups_tested <- list()
 for (i in 1:length(Phenotypes)){
   Gene_groups_tested[[i]] <- unique(Human_Mouse[Human_Mouse$SYMBOL_Mouse %in% unique(Genes_tested[grepl(paste(Phenotypes_Parameters[[i]],collapse="|"), Genes_tested$Parameter.Name..Successful) & Genes_tested$Zygosity=="homozygote",'Gene.Symbol']),'SYMBOL_Human'])
-  #unique(Mouse_Phenotypes[Mouse_Phenotypes$mp_term_name %in% Phenotypes[[i]],c("marker_symbol","sex","mp_term_name","p_value","percentage_change","effect_size","zygosity")])
 }
 
 # Calculate enrichment between genes that affect the phenotypes and genes from the clusters using a hypergeometric test
@@ -319,7 +317,8 @@ library(fields)
 library(scales)
 mat_col <- c('white',designer.colors(n=50, col=c('plum1','darkmagenta')))
 mat_col_breaks <- c(0,seq(-log10(0.05),max(-log10(mat)),length=51))
-heatmap.2(-log10(mat),Rowv= F,dendrogram = 'none',  Colv=F, scale='none', col=mat_col,breaks=mat_col_breaks, trace='none' )
+# Do not plot cluster 0
+heatmap.2(-log10(mat[,2:9]),Rowv= F,dendrogram = 'none',  Colv=F, scale='none', col=mat_col,breaks=mat_col_breaks, trace='none' )
 rm(i,k,mat_col,mat_col_breaks,tmp_i,tmp_k,tmp2,tmp_all,tmp,Phenotypes_Parameters,Phenotypes,Mouse_Phenotypes,mat,Human_Mouse,Gene_groups, Gene_groups_tested, Genes_tested)
 
 
@@ -357,7 +356,7 @@ for (i in GOI){
     lines(a,b)
   }
 }
-rm(Group,data_Iliac,a,b,d0,d2,d5,d9,GOI,i,k,tmp)
+rm(data_Iliac,a,b,d0,d2,d5,d9,GOI,i,k,tmp)
 
 ### Figure 2F
 
