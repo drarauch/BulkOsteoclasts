@@ -43,7 +43,7 @@ Gene_groups$scMarker <- unique(AllMarkers[AllMarkers$p_val_adj < 0.01 & AllMarke
 Gene_groups$Osteomorph_only <- Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph != "Common","SYMBOL_Human"]
 Gene_groups$Osteomorph_Osteoclast <- Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph == "Common","SYMBOL_Human"]
 
-## Figure 4A, the second and fith bar is for upper alignment of the 4th and 8th in illustrator.
+## Figure 4A, the second and sixth bar is for upper alignment of the 4th and 8th in illustrator.
 barplot(c(
   length(Gene_groups[[3]]),
   length(Gene_groups[[3]][Gene_groups[[3]] %in% Gene_groups[[1]] | Gene_groups[[3]] %in% Gene_groups[[2]]]),
