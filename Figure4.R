@@ -213,6 +213,8 @@ rm(genes, tmp, tmp_left, tmp_right,tmp_osteomorph,new.identities,scOC)
 # Gene ontology analysis of the signature genes for left, right and differentiated cells
 library(goseq)
 library(gplots)
+# gene ontology results can vary with package updates, here we used goseq_1.42.0 with geneLenDataBase_1.26.0 
+
 # the following files are provided in OSF https://osf.io/9xys4/
 scOC <- readRDS("ReadyToUse_scOC.rds")
 
