@@ -569,7 +569,7 @@ library(fields)
 library(gplots)
 mat_col <- c('white',designer.colors(n=49, col=c('plum1','darkmagenta')))
 mat_col_breaks <- c(0,seq(2,max(mat),length=50))
-heatmap.2(mat,trace="none",Colv = F,Rowv = F,col=mat_col)
+heatmap.2(mat,trace="none",Colv = F,Rowv = F,col=mat_col, breaks=mat_col_breaks)
 
 rm(mat_col, mat_col_breaks,mat,a,b,i,k,names,x,Fracture_list,Human_Mouse,data)
 
