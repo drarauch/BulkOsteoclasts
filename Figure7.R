@@ -35,6 +35,7 @@ barplot(c(
 ### Figure 7C
 library(goseq)
 library(gplots)
+# gene ontology results can vary with package updates, here we used goseq_1.42.0 with geneLenDataBase_1.26.0 
 
 # Make a list with gene groups
 Gene_groups <- list()
