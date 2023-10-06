@@ -186,117 +186,10 @@ rm(heatp,p2,p3,p,Enrichment,hg19.refGene.LENGTH,Metabolism,All,Cl1.EA,Cl1,Cl1.nu
 
 
 ### Figure 7E
+# Enrichment of resorption associated genes with gene expression dyanmics during fracture repair
 
-#hypergeometric testing of the differntiaiton and resorption regulated genes
-# Make a list with gene groups related to resorption
-Gene_groups <- list()
-Gene_groups[[1]] <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 > 0,'Symbol']
-Gene_groups[[2]] <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 < 0,'Symbol']
-Gene_groups[[3]] <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 > 0,'Symbol']
-Gene_groups[[4]] <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 < 0,'Symbol']
-names(Gene_groups) <- c('d0_up','d0_down','d9_up','d9_down')
-
-# Make a list with gene groups related to differentiation
-Gene_groups2 <- list()
-for(i in 1:8){
-  Gene_groups2[[i]] <- Diff_ctr[Diff_ctr$clust==i,'Symbol']
-  names(Gene_groups2)[i] <- paste("clust_",i,sep="")
-}
-
-mat <- matrix(NA,nrow=length(Gene_groups2), ncol=length(Gene_groups))
-rownames(mat) <- names(Gene_groups2)
-colnames(mat) <- names(Gene_groups)
-
-for (i in 1:length(Gene_groups2)){
-  for (k in 1:length(Gene_groups)){
-    tmp_i <- Gene_groups2[[i]]
-    tmp_k <- Gene_groups[[k]]
-    mat[i,k] <- phyper(length(tmp_i[tmp_i %in% tmp_k]), length(tmp_k), length(Diff_ctr[!Diff_ctr$Symbol %in% tmp_k,'Symbol']), length(tmp_i), lower.tail = F)
-    
-  }
-}
-mat <- -log10(mat)
-
-#plot as heatmap
-library(fields)
-library(scales)
-library(gplots)
-mat_col <- c('white',designer.colors(n=50, col=c('plum1','darkmagenta')))
-mat_col_breaks <- c(0,seq(-log10(0.05),max(mat),length=51))
-heatmap.2(mat,Rowv= F,dendrogram = 'none',  Colv=F, scale='none', col=mat_col,breaks=mat_col_breaks, trace='none', labRow=rownames(mat),labCol=colnames(mat) )
-rm(Gene_groups_1, Gene_groups_2,mat,i,k,mat_col,mat_col_breaks,tmp_i,tmp_k)
-
-
-### Figure 7F
-
-# Day 9 resorption heatmap
-tmp <- colData_RNA_Diff[colData_RNA_Diff$Timepoint=="d9",]
 # the following files are provided in OSF https://osf.io/9xys4/
-Activity <- read.delim("OC_activity.txt")
-tmp <- merge(tmp,Activity, by="Donor")
-#remove Donor 7
-tmp <- tmp[tmp$Donor != "Donor7",]
-tmp[order(tmp$Resorption),'Sample']
-
-# select genes regulated by resorption at day 9, order rows according to log fold changes and donor samples at day 9 according to resorptive activity
-y <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,tmp[order(tmp$Resorption),'Sample']][order(-Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,"logFC_Resorption_d9"]),]
-y <- t(scale(t(y)))
-y[y < -2] <- -2
-y[y > 2] <- 2
-
-library(fields)
-library(RColorBrewer)
-library(gplots)
-Mycol <- rev(designer.colors(n=100, col=brewer.pal(9,"Spectral")))
-heatmap.2(y,trace="none",Colv = F,Rowv = F,col=Mycol,
-          ColSideColors = designer.colors(100,col=brewer.pal(9,"BuPu"))[round(tmp[order(tmp$Resorption),'Resorption']*10)])
-
-# heatmap for the log fold change, will be added to the scaled heatmap in illustrator
-Mycol <- designer.colors(n=100, col=c('blue','white','red'))
-Mybreaks <- seq(-1,1,length=101)
-heatmap.2(cbind(
-  Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'logFC_Resorption_d9'][order(-Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'logFC_Resorption_d9',])],
-  Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'logFC_Resorption_d9'][order(-Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'logFC_Resorption_d9',])]),
-  trace="none",Colv = F,Rowv = F,col=Mycol, breaks=Mybreaks)
-
-# heatmap to get the colour scale for the resorption
-Mycol <- designer.colors(100,col=brewer.pal(9,"BuPu"))
-Mybreaks <- seq(0,10,length=101)
-heatmap.2(cbind(tmp$Resorption,tmp$Resorption),trace="none",Colv = F,Rowv = F,col=Mycol, breaks=Mybreaks)
-rm(Mybreaks,Mycol,y,tmp)
-
-
-### Figure 7G
-library(Seurat)
-library(gplots)
-# the following files are provided in OSF https://osf.io/9xys4/
-scOC <- readRDS("ReadyToUse_scOC.rds")
-
-# Expression of resorption associated genes per cell
-Matrix <- data.frame(as.matrix(GetAssayData(scOC)))
-# upregulated
-tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 > 0,'Symbol']
-tmp <- tmp[tmp %in% rownames(scOC)]
-# add expression sum to seurat object
-scOC$d9_res_up <- colSums(Matrix[rownames(Matrix) %in% tmp,])
-# downregulated
-tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 < 0,'Symbol']
-tmp <- tmp[tmp %in% rownames(scOC)]
-# add expression sum to seurat object
-scOC$d9_res_down <- colSums(Matrix[rownames(Matrix) %in% tmp,])
-# all
-tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'Symbol']
-tmp <- tmp[tmp %in% rownames(scOC)]
-# add expression sum to seurat object
-scOC$d9_res <- colSums(Matrix[rownames(Matrix) %in% tmp,])
-
-FeaturePlot(scOC,c('d9_res_up','d9_res_down','d9_res'))
-rm(scOC,tmp,Matrix)
-
-
-### Enrichment of resorption associated genes with gene expression dyanmics during fracture repair
 Human_Mouse <- read.delim("Ensemble_SYMBOL_Mouse_Human.txt",h=T)
-
 # Read each individual sheet of the processed data that are provided as Excel file
 library("readxl")
 Fracture_list <- list()
@@ -357,4 +250,115 @@ mat_col <- c('white',designer.colors(n=49, col=c('plum1','darkmagenta')))
 mat_col_breaks <- c(0,seq(2,max(mat),length=50))
 heatmap.2(mat,trace="none",Colv = F,Rowv = F,col=mat_col)
 
-rm(list=ls())
+rm(mat,mat_col, mat_col_breaks,i,k,Fracture_list,Gene_groups,x, names, data)
+
+
+### Figure 7F
+
+#hypergeometric testing of the differntiaiton and resorption regulated genes
+# Make a list with gene groups related to resorption
+Gene_groups <- list()
+Gene_groups[[1]] <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 > 0,'Symbol']
+Gene_groups[[2]] <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 < 0,'Symbol']
+Gene_groups[[3]] <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 > 0,'Symbol']
+Gene_groups[[4]] <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 < 0,'Symbol']
+names(Gene_groups) <- c('d0_up','d0_down','d9_up','d9_down')
+
+# Make a list with gene groups related to differentiation
+Gene_groups2 <- list()
+for(i in 1:8){
+  Gene_groups2[[i]] <- Diff_ctr[Diff_ctr$clust==i,'Symbol']
+  names(Gene_groups2)[i] <- paste("clust_",i,sep="")
+}
+
+mat <- matrix(NA,nrow=length(Gene_groups2), ncol=length(Gene_groups))
+rownames(mat) <- names(Gene_groups2)
+colnames(mat) <- names(Gene_groups)
+
+for (i in 1:length(Gene_groups2)){
+  for (k in 1:length(Gene_groups)){
+    tmp_i <- Gene_groups2[[i]]
+    tmp_k <- Gene_groups[[k]]
+    mat[i,k] <- phyper(length(tmp_i[tmp_i %in% tmp_k]), length(tmp_k), length(Diff_ctr[!Diff_ctr$Symbol %in% tmp_k,'Symbol']), length(tmp_i), lower.tail = F)
+    
+  }
+}
+mat <- -log10(mat)
+
+#plot as heatmap
+library(fields)
+library(scales)
+library(gplots)
+mat_col <- c('white',designer.colors(n=50, col=c('plum1','darkmagenta')))
+mat_col_breaks <- c(0,seq(-log10(0.05),max(mat),length=51))
+heatmap.2(mat,Rowv= F,dendrogram = 'none',  Colv=F, scale='none', col=mat_col,breaks=mat_col_breaks, trace='none', labRow=rownames(mat),labCol=colnames(mat) )
+rm(Gene_groups_1, Gene_groups_2,mat,i,k,mat_col,mat_col_breaks,tmp_i,tmp_k)
+
+
+### Figure 7G
+
+# Day 9 resorption heatmap
+tmp <- colData_RNA_Diff[colData_RNA_Diff$Timepoint=="d9",]
+# the following files are provided in OSF https://osf.io/9xys4/
+Activity <- read.delim("OC_activity.txt")
+tmp <- merge(tmp,Activity, by="Donor")
+#remove Donor 7
+tmp <- tmp[tmp$Donor != "Donor7",]
+tmp[order(tmp$Resorption),'Sample']
+
+# select genes regulated by resorption at day 9, order rows according to log fold changes and donor samples at day 9 according to resorptive activity
+y <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,tmp[order(tmp$Resorption),'Sample']][order(-Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,"logFC_Resorption_d9"]),]
+y <- t(scale(t(y)))
+y[y < -2] <- -2
+y[y > 2] <- 2
+
+library(fields)
+library(RColorBrewer)
+library(gplots)
+Mycol <- rev(designer.colors(n=100, col=brewer.pal(9,"Spectral")))
+heatmap.2(y,trace="none",Colv = F,Rowv = F,col=Mycol,
+          ColSideColors = designer.colors(100,col=brewer.pal(9,"BuPu"))[round(tmp[order(tmp$Resorption),'Resorption']*10)])
+
+# heatmap for the log fold change, will be added to the scaled heatmap in illustrator
+Mycol <- designer.colors(n=100, col=c('blue','white','red'))
+Mybreaks <- seq(-1,1,length=101)
+heatmap.2(cbind(
+  Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'logFC_Resorption_d9'][order(-Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'logFC_Resorption_d9',])],
+  Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'logFC_Resorption_d9'][order(-Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'logFC_Resorption_d9',])]),
+  trace="none",Colv = F,Rowv = F,col=Mycol, breaks=Mybreaks)
+
+# heatmap to get the colour scale for the resorption
+Mycol <- designer.colors(100,col=brewer.pal(9,"BuPu"))
+Mybreaks <- seq(0,10,length=101)
+heatmap.2(cbind(tmp$Resorption,tmp$Resorption),trace="none",Colv = F,Rowv = F,col=Mycol, breaks=Mybreaks)
+rm(Mybreaks,Mycol,y,tmp)
+
+
+### Figure 7H
+library(Seurat)
+library(gplots)
+# the following files are provided in OSF https://osf.io/9xys4/
+scOC <- readRDS("ReadyToUse_scOC.rds")
+
+# Expression of resorption associated genes per cell
+Matrix <- data.frame(as.matrix(GetAssayData(scOC)))
+# upregulated
+tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 > 0,'Symbol']
+tmp <- tmp[tmp %in% rownames(scOC)]
+# add expression sum to seurat object
+scOC$d9_res_up <- colSums(Matrix[rownames(Matrix) %in% tmp,])
+# downregulated
+tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 < 0,'Symbol']
+tmp <- tmp[tmp %in% rownames(scOC)]
+# add expression sum to seurat object
+scOC$d9_res_down <- colSums(Matrix[rownames(Matrix) %in% tmp,])
+# all
+tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01,'Symbol']
+tmp <- tmp[tmp %in% rownames(scOC)]
+# add expression sum to seurat object
+scOC$d9_res <- colSums(Matrix[rownames(Matrix) %in% tmp,])
+
+FeaturePlot(scOC,c('d9_res_up','d9_res_down','d9_res'))
+rm(scOC,tmp,Matrix)
+
+
