@@ -7,7 +7,36 @@ colData_RNA_Diff <- data.frame("Sample"=colnames(Diff_ctr)[3:31],
                                "Timepoint"=gsub(".*_","",colnames(Diff_ctr)[3:31]))
 rownames(colData_RNA_Diff)<-colData_RNA_Diff$Sample
 
+
 ### Figure 8A
+library(Seurat)
+library(gplots)
+# the following files are provided in OSF https://osf.io/9xys4/
+scOC <- readRDS("ReadyToUse_scOC.rds")
+
+# Expression of resorption associated genes per cell
+Matrix <- data.frame(as.matrix(GetAssayData(scOC)))
+# upregulated
+tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 > 0,'Symbol']
+tmp <- tmp[tmp %in% rownames(scOC)]
+# add expression sum to seurat object
+scOC$d0_res_up <- colSums(Matrix[rownames(Matrix) %in% tmp,])
+# downregulated
+tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 < 0,'Symbol']
+tmp <- tmp[tmp %in% rownames(scOC)]
+# add expression sum to seurat object
+scOC$d0_res_down <- colSums(Matrix[rownames(Matrix) %in% tmp,])
+# all
+tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01,'Symbol']
+tmp <- tmp[tmp %in% rownames(scOC)]
+# add expression sum to seurat object
+scOC$d0_res <- colSums(Matrix[rownames(Matrix) %in% tmp,])
+
+FeaturePlot(scOC,c('d0_res_up','d0_res_down','d0_res'))
+rm(scOC,tmp,Matrix)
+
+
+### Figure 8B
 
 # Day 0 resorption heatmap to which marker genes for lymphocytes and erythrocytes are added to check if d0 genes reflect contamination of the buffy coats
 tmp <- colData_RNA_Diff[colData_RNA_Diff$Timepoint=="d0",]
@@ -33,7 +62,7 @@ library(RColorBrewer)
 library(gplots)
 
 # color for scaled expression values
-Mycol2 <- designer.colors(n=100,col=brewer.pal(9, "Spectral"))
+Mycol2 <- rev(designer.colors(n=100,col=brewer.pal(9, "Spectral")))
 # color for absolute expression at day 0
 Mycol <- designer.colors(n=150,col=brewer.pal(9, "Greens"))
 
@@ -95,34 +124,6 @@ heatmap.2(as.matrix(y[,2:6]), col=Mycol2,Colv = F, trace='none',labCol= colnames
 plot(as.numeric(unique(as.factor(y3$Main.location))),pch=21,bg=c(brewer.pal(7,"Set1"),'white')[as.numeric(unique(as.factor(y3$Main.location)))])
 text(1:8,as.numeric(unique(as.factor(y3$Main.location))),unique(y3$Main.location))
 rm(tmp,y,y3,Localization,Mycol,Mycol2,heatp,Activity)
-
-
-### Figure 8B
-library(Seurat)
-library(gplots)
-# the following files are provided in OSF https://osf.io/9xys4/
-scOC <- readRDS("ReadyToUse_scOC.rds")
-
-# Expression of resorption associated genes per cell
-Matrix <- data.frame(as.matrix(GetAssayData(scOC)))
-# upregulated
-tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 > 0,'Symbol']
-tmp <- tmp[tmp %in% rownames(scOC)]
-# add expression sum to seurat object
-scOC$d0_res_up <- colSums(Matrix[rownames(Matrix) %in% tmp,])
-# downregulated
-tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 < 0,'Symbol']
-tmp <- tmp[tmp %in% rownames(scOC)]
-# add expression sum to seurat object
-scOC$d0_res_down <- colSums(Matrix[rownames(Matrix) %in% tmp,])
-# all
-tmp <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01,'Symbol']
-tmp <- tmp[tmp %in% rownames(scOC)]
-# add expression sum to seurat object
-scOC$d0_res <- colSums(Matrix[rownames(Matrix) %in% tmp,])
-
-FeaturePlot(scOC,c('d0_res_up','d0_res_down','d0_res'))
-rm(scOC,tmp,Matrix)
 
 
 ### Figure 8C
