@@ -30,7 +30,7 @@ for (i in GOI){
     lines(a,b)
   }
 }
-rm(Group,a,b,d0,d2,d5,d9,GOI,i,k,tmp)
+rm(a,b,d0,d2,d5,d9,GOI,i,k,tmp)
 
 
 ### Figure 6B
@@ -125,7 +125,7 @@ for (i in GOI){
     lines(a,b)
   }
 }
-rm(Group,a,b,d0,d2,d5,d9,GOI,i,k,tmp)
+rm(a,b,d0,d2,d5,d9,GOI,i,k,tmp)
 
 
 ### Figure 6F
@@ -193,19 +193,19 @@ for (i in GOI){
     lines(a,b)
   }
 }
-rm(Group,a,b,d0,d2,d5,d9,GOI,i,k,tmp)
+rm(a,b,d0,d2,d5,d9,GOI,i,k,tmp)
 
 ### Figure 6J
 # the following files are provided in OSF https://osf.io/9xys4/
 FFAR4 <- read.delim("FFAR4_Signaling_Resorption.txt",h=T)
 bp <- boxplot(FFAR4[,grep("IP1_",colnames(FFAR4))], names=c("0.1nMTUG","1nMTUG","10nMTUG"), ylab="IP1 levels")
-for (i in 1:nrow(SSTR2)){
+for (i in 1:nrow(FFAR4)){
   lines(1:3,unlist(FFAR4[i,grep("IP1_",colnames(FFAR4))]))
 }
 rm(FFAR4,bp)
 
 
-### Figure 6G
+### Figure 6K
 # the following files are provided in OSF https://osf.io/9xys4/
 FFAR4 <- read.delim("FFAR4_Diff.txt",h=T)
 
@@ -224,7 +224,7 @@ for (i in 1:nrow(FFAR4)){
 }
 rm(FFAR4,bp)
 
-### Figure 5H
+### Figure 6L
 # the following files are provided in OSF https://osf.io/9xys4/
 FFAR4 <- read.delim("FFAR4_Signaling_Resorption.txt",h=T)
 bp <- boxplot(FFAR4[,grep("Res_",colnames(FFAR4))], names=c("Veh","1nMTUG"), ylab="% eroded surface/bone surface")
