@@ -3,8 +3,8 @@
 Counts <- read.delim("Counts.txt",h=T)
 Diff_ctr <- read.delim("Diff_ctr.txt",h=T)
 colData_RNA_Diff <- data.frame("Sample"=colnames(Diff_ctr)[3:31],
-                               "Donor"=gsub("_.*","",colnames(RNA_raw)[3:31]),
-                               "Timepoint"=gsub(".*_","",colnames(RNA_raw)[3:31]))
+                               "Donor"=gsub("_.*","",colnames(Diff_ctr)[3:31]),
+                               "Timepoint"=gsub(".*_","",colnames(Diff_ctr)[3:31]))
 rownames(colData_RNA_Diff)<-colData_RNA_Diff$Sample
 
 
@@ -48,7 +48,6 @@ rm(GOI,tmp,d0,d2,d5,d9,a,b,i,k)
 
 
 ### Figure 1D
-# Get the correlation values for two examples
 rownames(Diff_ctr) <- Diff_ctr$Symbol
 Diff_ctr[Diff_ctr$Symbol %in% c('LPCAT2','COX11'),grep("cor_Donor",colnames(Diff_ctr))]
 
@@ -75,7 +74,6 @@ for(i in GOI){
 }
 rm(GOI,tmp,d0,d2,d5,d9,a,b,i,k)
 
-
 ### Figure 1E
 barplot(c(
   nrow(Diff_ctr[Diff_ctr$cor_08==0,]),
@@ -90,6 +88,7 @@ barplot(c(
 
 
 ### Figure 1F
+
 # PCA plot based on rlog values in Diff_ctr (not shown in the Figure)
 object <- Diff_ctr[,rownames(colData_RNA_Diff)]
 intgroup <- c('Timepoint', 'Donor')
@@ -187,7 +186,7 @@ rm(tmp_down, tmp_up,mat_col, mat_col_breaks,tmp, data,y)
 # the following files are provided in OSF https://osf.io/9xys4/
 data <- read.delim("ReadyToUse_GSE225974.txt",h=T)
 
-GOI <- c('SLC6A7')
+GOI <- c('SLC6A7','EOMES')
 par(mfrow=c(1,2),pty="s")
 for(i in GOI){
   tmp <-colData_RNA_Diff
@@ -216,6 +215,9 @@ for(i in GOI){
   }
 }
 
+Diff_ctr[Diff_ctr$Symbol %in% GOI,c("Symbol","padj_d2_vs_d0","padj_d5_vs_d0","padj_d9_vs_d0","padj_d9_vs_d2")]
+data[data$Symbol %in% GOI,c("Symbol","padj_OCvsPBMC")]
+
 rm(GOI,tmp,d0,d2,d5,d9,a,b,i,k,data)
 
 ### Figure 1I
@@ -227,5 +229,3 @@ tmp <- merge(Diff_ctr[,c("Symbol","logFC_d2_vs_d0","logFC_d5_vs_d0", "logFC_d9_v
 tmp_up <- tmp[tmp$padj_OCvsPBMC < 0.01 & tmp$logFC_OCvsPBMC >0,]
 plot(tmp_up$logFC_OCvsPBMC,tmp_up$logFC_d9_vs_d2, col=alpha('black',0.3))
 rm(tmp_up, data,tmp)
-
-
