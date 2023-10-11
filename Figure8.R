@@ -37,6 +37,7 @@ rm(scOC,tmp,Matrix)
 
 
 ### Figure 8B
+# The output of the figure is modified in Illustrator in which the genes for lymphocytes and erythrocytes are moved apart from the rest of the heatmap to highlight that those genes are not part of the genes that are differentially expressed with reorption outcome. 
 
 # Day 0 resorption heatmap to which marker genes for lymphocytes and erythrocytes are added to check if d0 genes reflect contamination of the buffy coats
 tmp <- colData_RNA_Diff[colData_RNA_Diff$Timepoint=="d0",]
