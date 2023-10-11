@@ -27,7 +27,7 @@ boxplot(Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph!="Common",2
         Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph=="Common",4],
         # Delta between Osteomorphs an Osteoclasts
         Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph=="Common",2]-Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph=="Common",3],
-        names=c('OM','OC','Mac','OM-OC'))
+        names=c('OM','OC','Mac','OM-OC','OM','OC','Mac','OM-OC'))
 # Selection must be based on p-values only, as some genes are nominal higher expressed in osteoclasts, but there they might not have reached statistical significant higher expression as compared to macrophages 
 
 # Get Human Symbols for osteomorph genes leads to 131 genes
@@ -43,7 +43,7 @@ Gene_groups$scMarker <- unique(AllMarkers[AllMarkers$p_val_adj < 0.01 & AllMarke
 Gene_groups$Osteomorph_only <- Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph != "Common","SYMBOL_Human"]
 Gene_groups$Osteomorph_Osteoclast <- Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph == "Common","SYMBOL_Human"]
 
-## Figure 4A, the second and sixth bar is for upper alignment of the 4th and 8th in illustrator.
+## Figure 4A, the second and sixth bar is for upper alignment of the 4th and 8th in illustrator. Next the third and fourth are aligned with the first bar, the seventh and eight with the fifth bar. Second and sith bar are deleted
 barplot(c(
   length(Gene_groups[[3]]),
   length(Gene_groups[[3]][Gene_groups[[3]] %in% Gene_groups[[1]] | Gene_groups[[3]] %in% Gene_groups[[2]]]),
@@ -90,9 +90,7 @@ for (i in levels(scOC)){
 # collect the p-value for the enrichment in a matrix
 mat <- matrix(NA,nrow=length(Gene_groups), ncol=4)
 rownames(mat) <- names(Gene_groups)
-# Collect the overlapping genes in a list
-mat_list_NOTcommon <- list()
-mat_list_common <- list()
+
 for (i in 1:length(Gene_groups)){
   tmp1 <- Gene_groups[[i]]
   tmp_osteomorph <- Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph!="Common" & Osteomorphs$SYMBOL_Human %in% rownames(scOC),]
@@ -104,7 +102,6 @@ for (i in 1:length(Gene_groups)){
     mat[i,1] <- 0
     mat[i,2] <- 0
   }
-  if(mat[i,1] > 2){ mat_list_NOTcommon[[i]] <- tmp2} else{mat_list_NOTcommon[[i]] <- ""}
   
   tmp_osteomorph <- Osteomorphs[Osteomorphs$Common.in.osteoclasts.and.osteomorph=="Common" & Osteomorphs$SYMBOL_Human %in% rownames(scOC),]
   tmp2 <- tmp_osteomorph[tmp_osteomorph$SYMBOL_Human %in% tmp1,'SYMBOL_Human']
@@ -115,12 +112,9 @@ for (i in 1:length(Gene_groups)){
     mat[i,3] <- 0
     mat[i,4] <- 0
   }
-  if(mat[i,3] > 2){ mat_list_common[[i]] <- tmp2} else{mat_list_common[[i]] <- ""}
-  
+
 }
-names(mat_list_NOTcommon) <- names(Gene_groups)
-names(mat_list_common) <- names(Gene_groups)
-lapply(mat_list,length)
+
 
 ## Figure 4C show enrichment in heatmap
 library(fields)
@@ -128,6 +122,46 @@ library(gplots)
 mat_col <- c('white',designer.colors(n=50, col=c('plum1','darkmagenta')))
 mat_col_breaks <- c(0,seq(-log10(0.01),max(mat[,c(1,3)]),length=51))
 heatmap.2(as.matrix(mat[,c(1,3)]),main="GO cluster", Rowv = F, Colv=F, dendrogram='none', scale='none', col=mat_col,breaks=mat_col_breaks, trace='none' )
+
+# Enrichment of RNA-seq cluster genes for marker genes of the scRNA-seq clusters using hypergeometric test and calculate numeric enrichment
+# Collect the scRNA-seq marker genes in a list
+Gene_groups <- list()
+x <- 1
+for (i in levels(scOC)){
+  Gene_groups[[x]] <- AllMarkers[AllMarkers$cluster==i & AllMarkers$p_val_adj < 0.01 & AllMarkers$avg_log2FC >0,'gene']
+  names(Gene_groups)[x] <- paste('Cl_',i,sep="")
+  x <- x+1
+}
+# Collect the clustered genes in a list
+Gene_groups2 <- list()
+for (i in 1:8){
+  Gene_groups2[[i]] <- Diff_ctr[Diff_ctr$clust==i,'Symbol']
+  names(Gene_groups)[i] <- paste('Cl_',i,sep="")
+}
+# collect the p-value for the enrichment in a matrix
+mat <- matrix(NA,nrow=length(Gene_groups), ncol=length(Gene_groups2))
+rownames(mat) <- names(Gene_groups)
+
+for (i in 1:length(Gene_groups)){
+  tmp1 <- Gene_groups[[i]]
+  tmp1 <- tmp1[tmp1 %in% Diff_ctr$Symbol]
+  for (k in 1:length(Gene_groups2)){
+    tmp2 <- Gene_groups2[[k]]
+    tmp2_tmp1 <- tmp2[tmp2 %in% tmp1]
+    if(length(tmp2_tmp1)>0){
+      mat[i,k] <- -log10(phyper(length(tmp2_tmp1),length(tmp2),nrow(Diff_ctr) - length(tmp2),length(tmp1),lower.tail = F))
+    } else{
+      mat[i,k] <- 0
+    }
+  }
+}
+
+
+mat_col <- c('white',designer.colors(n=50, col=c('plum1','darkmagenta')))
+mat_col_breaks <- c(0,seq(-log10(0.01),max(mat),length=51))
+heatmap.2(as.matrix(mat),main="GO cluster", Colv=F, scale='none', col=mat_col,breaks=mat_col_breaks, trace='none' )
+
+
 
 ## Figure 4D
 # Show dotplot for the Osteomorph only genes that are among the enriched cluster (only cluster 6)
@@ -214,11 +248,10 @@ rm(genes, tmp, tmp_left, tmp_right,tmp_osteomorph,new.identities,scOC)
 library(goseq)
 library(gplots)
 # gene ontology results can vary with package updates, here we used goseq_1.42.0 with geneLenDataBase_1.26.0 
-
 # the following files are provided in OSF https://osf.io/9xys4/
 scOC <- readRDS("ReadyToUse_scOC.rds")
 
-# Define background genes (all detected in RNA-seq that were used as inoput for DEseq analysis)
+# Define background genes (all detected in RNA-seq that were used as input for DEseq analysis)
 GO <- rownames(scOC)
 tmp_All <- make.names(GO, unique = TRUE)
 
@@ -369,5 +402,3 @@ for (i in 1:nrow(tmp2)){
 }
 
 rm(scOC,p,TF_Enrichment,tmp, tmp1, tmp2,Targets,i,k,l,m,mat_col, mat_col_breaks,n,OC_TFs,hr,mat,q)
-
-
