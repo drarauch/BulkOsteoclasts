@@ -19,7 +19,7 @@ GPCR <- unique(GPCR$HGNC.symbol)
 Ligand <- unique(Ligand[,c("Gene","name","pKi_value","pKd_value","LigandPrGene")])
 names(Ligand) <- c('Symbol','Ligand',"Ligand_pKi_value","Ligand_pKd_value","Ligand_Symbol")
 
-# Expression bias in GPCRs compared to all other genes (dyanmic ones are due to statistics not lowly expressed)
+# Expression bias in GPCRs compared to all other genes (dynamic ones are due to statistics not lowly expressed)
 rownames(Counts) <- Counts$RefSeqID
 Counts <- Counts[Diff_ctr$RefSeqID,]
 
@@ -53,7 +53,7 @@ expGPCR <- GPCR[GPCR %in% Diff_ctr_thres$Symbol]
 expLig <- unique(Ligand$Ligand_Symbol[Ligand$Ligand_Symbol %in% Diff_ctr_thres$Symbol])
 expLR <- Ligand_Receptor[Ligand_Receptor$Symbol %in% Diff_ctr_thres$Symbol & Ligand_Receptor$Ligand_Symbol %in% Diff_ctr_thres$Symbol,]
 
-## Figure 4A
+## Figure 5A
 barplot(c(
   length(expGPCR),
   length(expLig),
@@ -66,7 +66,7 @@ reg <- length(tmp)/nrow(Diff_ctr_thres)
 # Background probability non-regulated
 nonreg <- (nrow(Diff_ctr_thres)-length(tmp))/nrow(Diff_ctr_thres)
 
-## Figure 4B
+## Figure 5B
 barplot(c(
   # Single factors GPCR
   log2((length(expGPCR[expGPCR %in% tmp])/length(expGPCR))/reg),
@@ -79,7 +79,7 @@ barplot(c(
 ))
 
 
-## Figure 4C
+## Figure 5C
 # heatmap of expressed GPCRs and Ligands, order by cluster and save row number of each entry to connect both heatmaps GPCR
 y <- rbind(
   Diff_ctr_thres[Diff_ctr_thres$Symbol %in% expGPCR,][order(Diff_ctr_thres[Diff_ctr_thres$Symbol %in% expGPCR,]$clust,apply(Diff_ctr_thres[Diff_ctr_thres$Symbol %in% expGPCR,][,c('d0','d2','d5','d9')],1,max)),],
@@ -100,6 +100,7 @@ mat_col_breaks <- seq(0,max(y2),length=101)
 length(expGPCR)
 length(expLig)
 
+library(gplots)
 # heatmap receptor (GPCR)
 heatp_R <- heatmap.2(as.matrix(y2[1:length(expGPCR),]), col=rev(Mycol2), RowSideColors = Mycol[y[1:length(expGPCR),'clust']+1],breaks=mat_col_breaks, Colv = F, Rowv = F, trace='none')
 # heatmap ligand
@@ -130,7 +131,7 @@ for(i in 1:nrow(LR_tmp)){
 }
 
 
-## Figure 4D
+## Figure 5D
 # enrichment of GPCR among causal eBMD genes
 # the following files are provided in OSF https://osf.io/9xys4/
 GWAS <-  read.csv("ebmd_con_indepen.csv",h=T)
@@ -144,7 +145,7 @@ barplot(c(
   log2((length(expGPCR[expGPCR %in% tmp][expGPCR[expGPCR %in% tmp] %in% eBMDgene])/length(expGPCR[expGPCR %in% tmp]))/(length(eBMDgene[eBMDgene %in% tmp])/length(tmp)))))
 
 
-## Figure 4E
+## Figure 5E
 # Sort GPCRs by signaling
 # the following files are provided in OSF https://osf.io/9xys4/
 GPCR_couplingsub <- read.delim("subtypes_coupling.txt",h=T)
