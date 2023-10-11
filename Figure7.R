@@ -45,7 +45,7 @@ Gene_groups[[3]] <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC
 Gene_groups[[4]] <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 < 0,'Symbol']
 names(Gene_groups) <- c('d0_up','d0_down','d9_up','d9_down')
 
-# Define background genes (all detected in RNA-seq that were used as inoput for DEseq analysis)
+# Define background genes (all detected in RNA-seq that were used as input for DEseq analysis)
 GO <- Diff_ctr$Symbol
 tmp_All <- make.names(GO, unique = TRUE)
 
@@ -87,6 +87,8 @@ for (i in 4:6){
   p2 <- rbind(p2,p3)
 }
 # Make heatmap for visualization
+library(fields)
+library(RColorBrewer)
 mat_col <- c('white',designer.colors(n=50, col=c('plum1','darkmagenta')))
 mat_col_breaks <- c(0,seq(-log10(0.1),max(p2[,3:6]),length=51))
 
@@ -184,15 +186,11 @@ heatp <- heatmap.2(as.matrix(p2[,3:6]),main="GO cluster", Rowv = F, Colv=F, dend
 
 rm(heatp,p2,p3,p,Enrichment,hg19.refGene.LENGTH,Metabolism,All,Cl1.EA,Cl1,Cl1.nullp,Convert, Gene_groups,Pathways,Reactome,Relation,Current,i, mat_col, mat_col_breaks,New)
 
-
 ### Figure 7E
 # Enrichment of resorption associated genes with gene expression dyanmics during fracture repair
 
 # the following files are provided in OSF https://osf.io/9xys4/
-# File to convert Mouse Symbols into Human
 Human_Mouse <- read.delim("Ensemble_SYMBOL_Mouse_Human.txt",h=T)
-# GSE152677 has processed data "GSE152677_DEG_DESeq2.xls" which is available at OSF https://osf.io/9xys4/
-# 10.1016/j.bone.2019.07.022: Transcriptional Profiling of Intramembranous and Endochondral Ossification after Fracture in Mice (10.1016/j.bone.2019.07.022)
 # Read each individual sheet of the processed data that are provided as Excel file
 library("readxl")
 Fracture_list <- list()
@@ -251,7 +249,7 @@ library(fields)
 library(gplots)
 mat_col <- c('white',designer.colors(n=49, col=c('plum1','darkmagenta')))
 mat_col_breaks <- c(0,seq(2,max(mat),length=50))
-heatmap.2(mat,trace="none",Colv = F,Rowv = F,col=mat_col,breaks=mat_col_breaks)
+heatmap.2(mat,trace="none",Colv = F,Rowv = F,col=mat_col, breaks=mat_col_breaks)
 
 rm(mat,mat_col, mat_col_breaks,i,k,Fracture_list,Gene_groups,x, names, data)
 
@@ -363,5 +361,3 @@ scOC$d9_res <- colSums(Matrix[rownames(Matrix) %in% tmp,])
 
 FeaturePlot(scOC,c('d9_res_up','d9_res_down','d9_res'))
 rm(scOC,tmp,Matrix)
-
-
