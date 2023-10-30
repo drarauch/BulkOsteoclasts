@@ -19,8 +19,13 @@ names(tmp)[4:5] <- c('CTSK','ACP5')
 tmp <- merge(tmp,Activity, by="Donor")
 
 # Combine the both plots in illustrator
+par(mfrow=c(1,2),pty="s")
 plot(tmp$CTSK,tmp$Resorption, pch=2)
 plot(tmp$ACP5,tmp$Resorption, pch=8)
+
+# p-value linear regression of resorption and TRAP at day 9
+summary(lm(tmp$Resorption~tmp$TRAP_d9))
+summary(lm(tmp[c(1:6,8),'Resorption']~tmp[c(1:6,8),'TRAP_d9']))
 
 
 ### Figure 7B
@@ -102,6 +107,7 @@ library(org.Hs.eg.db)
 library(clusterProfiler)
 library(goseq)
 library(reactome.db)
+# gene ontology results can vary with package updates, here we used goseq_1.42.0 with geneLenDataBase_1.26.0 
 
 # Make a list with gene groups
 Gene_groups <- list()
@@ -186,77 +192,10 @@ heatp <- heatmap.2(as.matrix(p2[,3:6]),main="GO cluster", Rowv = F, Colv=F, dend
 
 rm(heatp,p2,p3,p,Enrichment,hg19.refGene.LENGTH,Metabolism,All,Cl1.EA,Cl1,Cl1.nullp,Convert, Gene_groups,Pathways,Reactome,Relation,Current,i, mat_col, mat_col_breaks,New)
 
+
 ### Figure 7E
-# Enrichment of resorption associated genes with gene expression dyanmics during fracture repair
 
-# the following files are provided in OSF https://osf.io/9xys4/
-Human_Mouse <- read.delim("Ensemble_SYMBOL_Mouse_Human.txt",h=T)
-# Read each individual sheet of the processed data that are provided as Excel file
-library("readxl")
-Fracture_list <- list()
-x <- 1
-names <- c("full_4h","full_1d","full_3d","full_7d","full_14d","stress_4h","stress_1d","stress_3d","stress_5d","stress_7d")
-for (i in c("fullfracture_DEG_DESeq2_full_4h","fullfracture_DEG_DESeq2_full_1d","fullfracture_DEG_DESeq2_full_3d","fullfracture_DEG_DESeq2_full_7d","fullfracture_DEG_DESeq2_full_14",
-            "stressfracture_DESeq2_full_4hr","stressfracture_DESeq2_full_1day","stressfracture_DESeq2_full_3day","stressfracture_DESeq2_full_5day","stressfracture_DESeq2_full_7day")){
-  data <- read_excel("GSE152677_DEG_DESeq2.xlsx", sheet = i)
-  if(x < 6){
-    #extract logFC and adjusted p-values
-    data <- data[,c(1,5,9)]
-  } else {
-    #extract logFC and adjusted p-values
-    data <- data[,c(1,3,7)]  
-  }
-  names(data) <- c('SYMBOL_Mouse','logFC','padj')
-  # get Human Symbols
-  data <- merge(data,Human_Mouse[,c("SYMBOL_Mouse","SYMBOL_Human")], by="SYMBOL_Mouse")
-  data$padj <- as.numeric(data$padj)
-  data[!complete.cases(data$padj),'padj'] <- 1
-  # seperate into upregulated and downregulated genes for each sheet
-  Fracture_list[[(2*(x-1)+1)]] <- unique(data[data$padj < 0.01 & data$logFC < 0, "SYMBOL_Human"])
-  Fracture_list[[(2*(x-1)+2)]] <- unique(data[data$padj < 0.01 & data$logFC > 0, "SYMBOL_Human"])
-  names(Fracture_list)[(2*(x-1)+1)] <- paste(names[x],"_down",sep="")
-  names(Fracture_list)[(2*(x-1)+2)] <- paste(names[x],"_up",sep="")
-  x <- x+1
-}
-
-Gene_groups <- list()
-Gene_groups[[1]] <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 > 0,'Symbol']
-Gene_groups[[2]] <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 < 0,'Symbol']
-Gene_groups[[3]] <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 > 0,'Symbol']
-Gene_groups[[4]] <- Diff_ctr[Diff_ctr$padj_Resorption_d9 < 0.01 & Diff_ctr$logFC_Resorption_d9 < 0,'Symbol']
-names(Gene_groups) <- c('d0_up','d0_down','d9_up','d9_down')
-
-
-# Calculate enrichment based on a hypergeometric test
-mat <- matrix(NA,ncol=length(Fracture_list),nrow=4)
-colnames(mat) <- names(Fracture_list)
-rownames(mat) <- names(Gene_groups)
-for (i in 1:length(Fracture_list)){
-  for (k in 1:length(Gene_groups)){
-    a <- Fracture_list[[i]]
-    b <- Gene_groups[[k]]
-    mat[k,i] <- phyper(length(a[a %in% b]),length(b),length(Diff_ctr$Symbol)-length(b),length(a),lower.tail=FALSE)
-  }
-}
-
-mat[mat > 0.01] <- 1
-mat <- -log10(mat)
-# Order into all upregulated from full fracture, all down from full fracture, all up from stress fracture, and all down from stress fracture
-mat <- t(mat[,c(1,3,5,7,9,2,4,6,8,10,11,13,15,17,19,12,14,16,18,20)])
-
-# Plot result as heat map
-library(fields)
-library(gplots)
-mat_col <- c('white',designer.colors(n=49, col=c('plum1','darkmagenta')))
-mat_col_breaks <- c(0,seq(2,max(mat),length=50))
-heatmap.2(mat,trace="none",Colv = F,Rowv = F,col=mat_col, breaks=mat_col_breaks)
-
-rm(mat,mat_col, mat_col_breaks,i,k,Fracture_list,Gene_groups,x, names, data)
-
-
-### Figure 7F
-
-#hypergeometric testing of the differntiaiton and resorption regulated genes
+#hypergeometric testing of the differntiation and resorption regulated genes
 # Make a list with gene groups related to resorption
 Gene_groups <- list()
 Gene_groups[[1]] <- Diff_ctr[Diff_ctr$padj_Resorption_d0 < 0.01 & Diff_ctr$logFC_Resorption_d0 > 0,'Symbol']
@@ -296,7 +235,7 @@ heatmap.2(mat,Rowv= F,dendrogram = 'none',  Colv=F, scale='none', col=mat_col,br
 rm(Gene_groups_1, Gene_groups_2,mat,i,k,mat_col,mat_col_breaks,tmp_i,tmp_k)
 
 
-### Figure 7G
+### Figure 7F
 
 # Day 9 resorption heatmap
 tmp <- colData_RNA_Diff[colData_RNA_Diff$Timepoint=="d9",]
@@ -335,7 +274,7 @@ heatmap.2(cbind(tmp$Resorption,tmp$Resorption),trace="none",Colv = F,Rowv = F,co
 rm(Mybreaks,Mycol,y,tmp)
 
 
-### Figure 7H
+### Figure 7G
 library(Seurat)
 library(gplots)
 # the following files are provided in OSF https://osf.io/9xys4/
@@ -361,3 +300,4 @@ scOC$d9_res <- colSums(Matrix[rownames(Matrix) %in% tmp,])
 
 FeaturePlot(scOC,c('d9_res_up','d9_res_down','d9_res'))
 rm(scOC,tmp,Matrix)
+
