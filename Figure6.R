@@ -295,4 +295,5 @@ for(i in 1:nrow(SSTR2_KD_RNA)){
 plot((SSTR2_KD_RNA[,1]-SSTR2_KD_RNA[,2]),
      (SSTR2_KD_resorption$Delta_Negative-SSTR2_KD_resorption$Delta_siSSTR2),
      xlab="Delta in SSTR2 expression \n upon knockdown", ylab="Loss of Anti-resorptive \n treatment effect")
+abline(lm((SSTR2_KD_resorption$Delta_Negative-SSTR2_KD_resorption$Delta_siSSTR2)~I(SSTR2_KD_RNA[,1]-SSTR2_KD_RNA[,2])),lty=2)
 summary(lm((SSTR2_KD_resorption$Delta_Negative-SSTR2_KD_resorption$Delta_siSSTR2)~(SSTR2_KD_RNA[,1]-SSTR2_KD_RNA[,2])))
