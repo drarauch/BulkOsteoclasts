@@ -113,9 +113,9 @@ BP <- unique(c(
   'GO:0022008', 'GO:0032543','GO:0070085','GO:0007156','GO:0017004','GO:0044782','GO:0007010',
   'GO:0016071','GO:0006397','GO:0006351','GO:0008380','GO:0006325','GO:0006366','GO:0016570',
   'GO:0045087','GO:0030097','GO:0046649','GO:0032635','GO:0002224',
-  'GO:0043299','GO:0032606','GO:0036230','GO:0007296','GO:0000278','GO:0007059','GO:0000281',
+  'GO:0043299','GO:0032606','GO:0036230','GO:0000278','GO:0007059','GO:0000281',
   'GO:0016043','GO:0007154','GO:0007155','GO:0048812','GO:0030029','GO:0030865','GO:0016477',
-  'GO:0090383','GO:0030198','GO:0045851','GO:0046849','GO:0045047','GO:0006612','GO:0000187',
+  'GO:0090383','GO:0030198','GO:0045851','GO:0046849','GO:0045047','GO:0006612',
   'GO:0006955','GO:0010467','GO:0006397','GO:0008380','GO:0045321','GO:0006915','GO:0045087',
   'GO:0007249','GO:0000165','GO:0032635','GO:0032612','GO:0032615','GO:0045444','GO:0032623',
   'GO:0060070'))
@@ -123,7 +123,7 @@ BP <- unique(c(
 # Extract p values for categories of interest and log transform them
 p <- cbind(GO_cluster[GO_cluster$category %in% BP,1:2],-log10(GO_cluster[GO_cluster$category %in% BP,c(4:ncol(GO_cluster))]))
 
-# Order the enrichments based on the individual clusters for nice representation 
+# Order the enrichments based on the individual clusters for nice representation
 p2 <- -log10(GO_cluster[GO_cluster$category %in% BP,c(4:ncol(GO_cluster))])
 rownames(p2) <- p$category
 rownames(p) <- p$category
@@ -162,6 +162,7 @@ library(org.Hs.eg.db)
 library(clusterProfiler)
 library(goseq)
 library(reactome.db)
+# gene ontology results can vary with package updates, here we used goseq_1.42.0 with geneLenDataBase_1.26.0 
 
 # Make a list with gene groups
 Gene_groups <- list()
@@ -572,4 +573,3 @@ mat_col_breaks <- c(0,seq(2,max(mat),length=50))
 heatmap.2(mat,trace="none",Colv = F,Rowv = F,col=mat_col, breaks=mat_col_breaks)
 
 rm(mat_col, mat_col_breaks,mat,a,b,i,k,names,x,Fracture_list,Human_Mouse,data)
-
