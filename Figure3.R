@@ -344,7 +344,7 @@ rasterImage(legend_image, 0, 1, 0.5,0)
 rm(legend_image, qg, test, tmp,i, legend_image,Nodes,value,Targets,col, Aset, Bset)
 
 
-### Figure 3G
+### Figure 3I
 
 # the following files are provided in OSF https://osf.io/9xys4/
 # Get GWAS causal genes from  doi:10.1038/s41588-018-0302-x part of supplementary table 2
